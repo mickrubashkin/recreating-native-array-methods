@@ -1,0 +1,111 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The lastIndexOf() method returns the last index at which a given element can be found in the array,
+    // or -1 if it is not present.
+    // The array is searched backwards, starting at fromIndex.
+
+  // Example from MDN.
+    // const animals = ['Dodo', 'Tiger', 'Penguin', 'Dodo'];
+    // animals.lastIndexOf('Dodo'); >>> // 3
+    // animals.lastIndexOf('Tiger'); >>> // 1
+
+  // Prototype implementation.
+  // function lastIndexOf(array, searchElement, fromIndex) {
+  //   var startingIndex = fromIndex || array.length - 1;
+  //   for (var i = startingIndex; i >= 0; i--) {
+  //     if (searchElement === array[i]) {
+  //       return i;
+  //     }
+  //   }
+
+  //   return -1;
+  // }
+
+  // Function signature.
+  // lastIndexOf(array, searchElement[, fromIndex])
+
+  // Parameters.
+  // searchElement
+  // Element to locate in the array.
+
+  // fromIndex (Optional)
+  // The index to start the search at.
+
+  // Return value.
+  // The last index of the element in the array; -1 if not found.
+
+  // Function implementation.
+  function lastIndexOf(array, searchElement, fromIndex = array.length - 1) {
+    var startingIndex = fromIndex;
+
+    if (fromIndex < 0) {
+      startingIndex = array.length + fromIndex;
+    }
+
+    if (typeof fromIndex !== 'number') {
+      startingIndex = array.length - 1;
+    }
+
+    for (var i = startingIndex; i >= 0; i--) {
+      if (searchElement === array[i]) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  tests({
+    'If searchElement is founded, it should return the position of that element in the array.': function () {
+      var foundedLastIndex = lastIndexOf([1], 1);
+      eq(foundedLastIndex, 0);
+    },
+    'It should return the last index at which searchElement can be found.': function () {
+      var foundedLastIndex = lastIndexOf([1, 2, 1], 1);
+      eq(foundedLastIndex, 2);
+    },
+    'If searchElement is not founded, it should return -1.': function () {
+      var foundedLastIndex = lastIndexOf([1], 2);
+      eq(foundedLastIndex, -1);
+    },
+    'It should use strict equality to compare searchElement to elements of the array.': function () {
+      var foundedLastIndex = lastIndexOf([1], '1');
+      eq(foundedLastIndex, -1);
+    },
+
+    'It should accept fromIndex to start searching backwords from as third argument.': function () {
+      var foundedLastIndex = lastIndexOf([1, 2, 1], 1, 1);
+      eq(foundedLastIndex, 0);
+    },
+    'If fromIndex >= array.length, it should search the whole array.': function () {
+      var foundedLastIndex = lastIndexOf([1, 2, 1], 1, 5);
+      eq(foundedLastIndex, 2);
+    },
+    'If fromIndex is negative, it should use it as the offset from the end of the array.': function () {
+      var foundedLastIndex = lastIndexOf([1, 2, 1], 1, -2);
+      eq(foundedLastIndex, 0);
+    },
+    'It should use array.length - 1 as default value of the fromIndex.': function () {
+      var foundedLastIndex = lastIndexOf([1, 2, 1], 1);
+      eq(foundedLastIndex, 2);
+    },
+    'If the calculated index is less than 0, it should return -1.': function() {
+      var foundedLastIndex = lastIndexOf([1, 2, 1], 1, -4);
+      eq(foundedLastIndex, -1);
+    },
+
+    'It should search from right to left.': function () {
+      var foundedIndex = lastIndexOf([1, 2, 1], 1);
+      eq(foundedIndex, 2);
+    },
+    'If fromIndex is negative, it should search from rigth to left.': function () {
+      var foundedIndex = lastIndexOf([2, 2, 3, 2], 2, -3);
+      eq(foundedIndex, 1);
+    },
+    'If fromIndex is not a number, it should use the default value.': function () {
+      var foundedIndex = lastIndexOf([1, 2, 3], 2, 'not a number');
+      eq(foundedIndex, 1);
+    }
+  });
+</script>

@@ -1,0 +1,229 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The slice() method returns a shallow copy of a portion of an array
+    // into a new array object selected from start to end(end not included)
+    // where start and end represent the index of items in that array.
+    // The original array will not be modified.
+
+  // Example from MDN.
+    // const animals = ['ant', 'bison', 'camel', 'duck', 'elephant'];
+    // animals.slice(2); >>> ["camel", "duck", "elephant"]
+    // animals.slice(2, 4); >>> ["camel", "duck"]
+    // animals.slice(1, 5); >>> ["bison", "camel", "duck", "elephant"]
+
+  // Prototype implementation.
+    // function slice(array, start, end) {
+    //   var slicedArray = [];
+    //   for (var i = start; i < end; i++) {
+    //     slicedArray.push(array[i]);
+    //   }
+    //   return slicedArray;
+    // }
+
+  // Function signature.
+    // slice(array[, start[, end]])
+
+  // Parameters.
+    // array
+      // Target array to slice.
+
+    // start (optional)
+      // Zero-based index at which to start extraction.
+
+    // end (optional)
+      // Zero - based index before which to end extraction. 
+
+  // Return value.
+    // A new array containing the extracted elements.
+
+  // Function implementation.
+  function slice(array, start, end) {
+    var slicedArray = [];
+    var startFromIndex = 0;
+    var endBeforeIndex = array.length;
+
+    if (arguments.length > 1) {
+      if (typeof start !== 'number') {
+        startFromIndex = 0;
+      } else {
+        startFromIndex = start >= 0 ? start : array.length + start;
+      }
+    }
+
+    if (arguments.length > 2) {
+      if (typeof end !== 'number') {
+        endBeforeIndex = array.length;
+      } else {
+        endBeforeIndex = end >= 0 ? end : array.length + end;
+        if (endBeforeIndex > array.length) {
+          endBeforeIndex = array.length;
+        }
+      }
+    }
+
+    for (var i = startFromIndex; i < endBeforeIndex; i++) {
+      slicedArray.push(array[i]);
+    }
+
+    return slicedArray;
+  }
+
+  tests({
+    'It should return a new array.': function () {
+      var testArray = [];
+      var slicedArray = slice(testArray);
+      eq(Array.isArray(slicedArray), true);
+      eq(slicedArray === testArray, false);
+    },
+    'It should return a new array containing the copied elements.': function () {
+      var testArray = [1];
+      var slicedArray = slice(testArray);
+      eq(slicedArray[0], 1);
+    },
+    'It should not alter the original array.': function () {
+      var testArray = [1];
+      var slicedArray = slice(testArray);
+      eq(slicedArray === testArray, false);
+    },
+
+    'If startIndex, it should copy the elements from that position.': function () {
+      var testArray = [1, 2, 3];
+      var slicedArray = slice(testArray, 1);
+      eq(slicedArray.length, 2);
+      eq(slicedArray[0], 2);
+      eq(slicedArray[1], 3);
+    },
+    'If startIndex >= array.length, it should return an empty array.': function () {
+      var slicedArray = slice([1], 2);
+      eq(slicedArray.length, 0);
+      eq(Array.isArray(slicedArray), true);
+    },
+    'If startIndex < 0, it should start from array.length + startIndex position.': function () {
+      var slicedArray = slice([1, 2, 3], -2);
+      eq(slicedArray.length, 2);
+      eq(slicedArray[0], 2);
+      eq(slicedArray[1], 3);
+    },
+    'If no startIndex, it should start from the index 0.': function () {
+      var testArray = [1, 2, 3];
+      var slicedArray = slice(testArray);
+      eq(slicedArray.length, 3);
+      eq(slicedArray[0], 1);
+      eq(slicedArray[1], 2);
+      eq(slicedArray[2], 3);
+    },
+    'If startIndex is not a Number, it should start from index 0.': function () {
+      var slicedArray = slice([1, 2], 'start from 0');
+      eq(slicedArray.length, 2);
+      eq(slicedArray[0], 1);
+      eq(slicedArray[1], 2);
+    },
+
+    'If endIndex, it should copy elements up to but not including that position.': function () {
+      var testArray = [1, 2, 3];
+      var slicedArray = slice(testArray, 0, 1);
+      eq(slicedArray.length, 1);
+      eq(slicedArray[0], 1);
+    },
+    'If endIndex > array.length, it should stop at the end of the array.': function () {
+      var testArray = [1, 2, 3];
+      var slicedArray = slice(testArray, 0, 5);
+      eq(slicedArray.length, 3);
+      eq(slicedArray[0], 1);
+      eq(slicedArray[1], 2);
+      eq(slicedArray[2], 3);
+    },
+    'If endIndex < 0, it should stop before the array.length + endIndex position.': function () {
+      var testArray = [1, 2, 3];
+      var slicedArray = slice(testArray, 0, -2);
+      eq(slicedArray.length, 1);
+      eq(slicedArray[0], 1);
+    },
+    'If no endIndex, it should stop at the end of the array (before aray.length position).': function () {
+      var testArray = [1, 2, 3];
+      var slicedArray = slice(testArray, 0);
+      eq(slicedArray.length, 3);
+      eq(slicedArray[0], 1);
+      eq(slicedArray[1], 2);
+      eq(slicedArray[2], 3);
+    },
+    'If endIndex is not a Number, it should start from index 0.': function () {
+      var slicedArray = slice([1, 2], 'stop before index 1');
+      eq(slicedArray.length, 2);
+      eq(slicedArray[0], 1);
+      eq(slicedArray[1], 2);
+    },
+
+    'If elelemt of the original array is object reference, it should copy that reference.': function () {
+      // Both copy and original arrays should reference to the same object.
+      var myObj = {
+        name: 'origin'
+      };
+      var testArray = [myObj];
+      var slicedArray = slice(testArray);
+      eq(slicedArray[0].name, 'origin');
+      eq(testArray[0].name, 'origin');
+
+      myObj.name = 'changed by object';
+      eq(slicedArray[0].name, 'changed by object');
+      eq(testArray[0].name, 'changed by object');
+
+      testArray[0].name = 'changed by testArray';
+      eq(slicedArray[0].name, 'changed by testArray');
+      eq(testArray[0].name, 'changed by testArray');
+      eq(myObj.name, 'changed by testArray');
+
+      slicedArray[0].name = 'changed by slicedArray';
+      eq(slicedArray[0].name, 'changed by slicedArray');
+      eq(testArray[0].name, 'changed by slicedArray');
+      eq(myObj.name, 'changed by slicedArray');
+    },
+    'If elemenet of the original array is string, number, or boolean, it should copy value in the new array.': function () {
+      // Changes to the string, number, or boolean in one array do not affect the other array
+      var testArray = [1, 'string', false];
+      var slicedArray = slice(testArray);
+
+      // Test changes in original array.
+      testArray[0] = 2;
+      testArray[1] = 'changed in original array';
+      testArray[2] = true;
+      eq(slicedArray[0], 1);
+      eq(slicedArray[1], 'string');
+      eq(slicedArray[2], false);
+
+      // Test changes in sliced array.
+      slicedArray[0] = 3;
+      slicedArray[1] = 'changed in sliced array';
+      slicedArray[2] = false;
+      eq(testArray[0], 2);
+      eq(testArray[1], 'changed in original array');
+      eq(testArray[2], true);
+    },
+    'If a new element is added to either array, the other array should not be affected.': function () {
+      var testArray = [1];
+      var slicedArray = slice(testArray);
+
+      testArray.push(2);
+      eq(slicedArray.length, 1);
+      eq(slicedArray[0], 1);
+
+      slicedArray.push(3);
+      eq(testArray.length, 2);
+      eq(testArray[0], 1);
+      eq(testArray[1], 2);
+    },
+    'If array-like object passed in as the first argument, it should return a new sliced array.': function () {
+      function makeArrayFromArguments() {
+        return slice(arguments);
+      }
+      
+      var arrayFromArguments = makeArrayFromArguments('a', 'b');
+      eq(Array.isArray(arrayFromArguments), true);
+      eq(arrayFromArguments.length, 2);
+      eq(arrayFromArguments[0], 'a');
+      eq(arrayFromArguments[1], 'b');
+    }
+  });
+</script>

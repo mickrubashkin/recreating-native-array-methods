@@ -1,0 +1,165 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The unshift() method adds one or more elements to the beginning of an array and returns the new length of the array.
+
+  // Example from MDN.
+    // const array1 = [1, 2, 3];
+    // console.log(array1.unshift(4, 5)); // expected output: 5
+    // console.log(array1); // expected output: Array [4, 5, 1, 2, 3]
+
+  // Prototype implementation.
+    // function unshift(array, element) {
+    //   var length = array.length;
+    //   var numberOfelementsToInsert = arguments.length - 1;
+
+    //   var k = length;
+    //   while (k > 0) {
+    //     var newIndex = k + numberOfelementsToInsert - 1;
+    //     var itemToShift = array[k];
+    //     array[newIndex] = itemToShift;
+    //     k--;
+    //   }
+
+    //   for (var i = 0; i < numberOfelementsToInsert; i++) {
+    //     array[i] = arguments[i + 1];
+    //   }
+
+    //   array.length = length + numberOfelementsToInsert;
+
+    //   return array.length;
+    // }
+
+  // Function signature.
+    // unshift(array, element1[, ...[, elementN]])
+
+  // Parameters.
+    // array
+      // The array-like object to perfom unshift at.
+
+    // elementN
+      // The elements to add to the front of the arr.
+
+  // Return value.
+    // The new length property of the object upon which the method was called.
+
+  // Function implementation.
+  function unshift(array, element) {
+    var lengthDescriptor = Object.getOwnPropertyDescriptor(array, 'length');
+
+    if (lengthDescriptor && lengthDescriptor.writable === false) {
+      throw new TypeError("Cannot assign to read only property 'length' of object");
+    }
+
+    if (!array.length) {
+      array.length = 0;
+    }
+
+    if (array.length && !(typeof array.length === 'number')) {
+      array.length = 0;
+    }
+
+    var length = array.length;
+    var numberOfelementsToInsert = arguments.length - 1;
+
+    var k = length;
+    while (k > 0) {
+      var newIndex = k + numberOfelementsToInsert - 1;
+      var itemToShift = array[k - 1];
+      array[newIndex] = itemToShift;
+      k--;
+    }
+
+    for (var i = 0; i < numberOfelementsToInsert; i++) {
+      array[i] = arguments[i + 1];
+    }
+
+    array.length = length + numberOfelementsToInsert;
+
+    return array.length;
+  }
+
+  tests({
+    'It should inserts the given values to the beginning of an array-like object.': function () {
+      var array = [];
+      unshift(array, 1);
+      eq(array[0], 1);
+    },
+    'It should set the passed in element\'s index to 0 in the array.': function () {
+      var array = [1];
+      unshift(array, 2);
+      eq(array[0], 2);
+    },
+    'It should shift rigth indexes of the original elements in the array.': function () {
+      var array = [1, 2];
+      unshift(array, 3);
+      eq(array[1], 1);
+      eq(array[2], 2);
+    },
+    'It should return the new length property of the passed array-like object.': function () {
+      var array = [1];
+      unshift(array, 2);
+      eq(array.length, 2);
+    },
+
+    'If multiple elements are passed as parameters, it should insert them in chunk at the beginning of the object, in the exact same order they were passed as parameters.': function () {
+      var array = [1, 2];
+      unshift(array, 3, 4, 5);
+      eq(array[0], 3);
+      eq(array[1], 4);
+      eq(array[2], 5);
+    },
+    'If no elements passed in as parameters, it should return array.length whithout changing the array.': function () {
+      var array = [1];
+      var unshiftReturnValue = unshift(array);
+      eq(unshiftReturnValue, array.length);
+      eq(array.length, 1);
+      eq(array[0], 1);
+    },
+
+    'It could be used on Array-like objects.': function () {
+      var objWithLengthProperty = {
+        0: 'first',
+        1: 'second',
+        length: 2
+      };
+      unshift(objWithLengthProperty, 'inserted item');
+      eq(objWithLengthProperty.length, 3);
+      eq(objWithLengthProperty[0], 'inserted item');
+      eq(objWithLengthProperty[1], 'first');
+      eq(objWithLengthProperty[2], 'second');
+    },
+    'If no length property, it should create it and use 0 as starting index.': function () {
+      var objWithoutLengthProperty = {
+        name: "Mik's object"
+      };
+      unshift(objWithoutLengthProperty, 'inserted item');
+      eq(objWithoutLengthProperty.length, 1);
+      eq(objWithoutLengthProperty[0], 'inserted item');
+      eq(objWithoutLengthProperty.name, "Mik's object");
+    },
+    'If the length exists and is not a number, it should be converted to 0.': function () {
+      var objWithNotANumberLengthProperty = {
+        length: 'not a number'
+      };
+      unshift(objWithNotANumberLengthProperty, 'inserted item');
+      eq(objWithNotANumberLengthProperty.length, 1);
+      eq(objWithNotANumberLengthProperty[0], 'inserted item');
+    },
+    'If passed in first argument is an array-lilke object with non-writable length property,it should throw TypeError.': function () {
+      // Cannot assign to read only property '3' of object '[object String]' at String.unshift
+      var string = "a";
+      var isTypeError = false;
+      
+      try {
+        unshift(string, 1);
+      } catch(e) {
+        if (e instanceof TypeError) {
+          isTypeError = true;
+        }
+      }
+      eq(isTypeError, true);
+    }
+  });
+</script>

@@ -1,0 +1,127 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The includes() method determines whether an array includes a certain value among its entries,
+    // returning true or false as appropriate.
+
+  // Example from MDN.
+    // const array1 = [1, 2, 3];
+    // console.log(array1.includes(2)); // expected output: true
+
+    // const pets = ['cat', 'dog', 'bat'];
+    // console.log(pets.includes('cat')); // expected output: true
+    // console.log(pets.includes('at')); // expected output: false
+
+
+  // Prototype implementation.
+    // function includes(array, searchElement) {
+    //   for (var i = 0; i < array.length; i++) {
+    //     if (searchelement === array[i]) {
+    //       return true;
+    //     }
+    //   }
+    //   return false;
+    // }
+
+  // Function signature.
+    // includes(array, valueToFind[, fromIndex])
+
+  // Parameters.
+    // valueToFind
+      // The value to search for.
+
+    // fromIndex (Optional)
+      // The position in this array at which to begin searching for valueToFind.
+
+  // Return value.
+    // true if valueToFind is found.
+    // otherwise false.
+
+  // Function implementation.
+  function includes(array, valueToFind, fromIndex = 0) {
+    var startingIndex = fromIndex;
+
+    if (fromIndex < 0) {
+      if (fromIndex + array.length <= 0) {
+        startingIndex = 0;
+      } else {
+        startingIndex = array.length + fromIndex;
+      }
+    }
+
+    for (var i = startingIndex; i < array.length; i++) {
+      if (valueToFind === array[i]) {
+        return true;
+      }
+
+      // Handles the only difference between '===' and SameValueZero: equal(NaN, NaN) -> true.
+      if (Number.isNaN(valueToFind) && Number.isNaN(array[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  tests({
+    'It should return true if the valueToFind is found within the array.': function () {
+      var valueWasFound = includes([1], 1);
+      eq(valueWasFound, true);
+    },
+    'It should return false if the valueToFind was not found.': function() {
+      var valueWasFound = includes([1], 2);
+      eq(valueWasFound, false);
+    },
+    'If fromIndex provided, it should begin searching for valueToFind from the fromIndex position.': function () {
+      var valueWasFound = includes([1, 2], 1, 1);
+      eq(valueWasFound, false);
+    },
+    'It should return true if the valueToFind is found withing the part of the array indicated by the fromIndex.': function () {
+      var valueWasFound = includes([1, 2, 1], 1, 1);
+      eq(valueWasFound, true);
+    },
+
+    'If fromIndex is positive, it should start the search from that position in the array.': function () {
+      eq(includes([1, 2, 3], 2, 2), false);
+      eq(includes([1, 2, 3], 3, 2), true);
+    },
+    'If fromIndex is negative, it should start the search from (array.length + fromIndex) position.': function () {
+      eq(includes([1, 2, 3], 2, -1), false);
+      eq(includes([1, 2, 3], 2, -2), true);
+    },
+    'It should use 0 as the default value of fromIndex.': function () {
+      eq(includes([1, 1], 1), true);
+    },
+    'If fromIndex >= array.length, it should return false without searching.': function () {
+      eq(includes([1], 1, 1), false);
+      eq(includes([1], 1, 2), false);
+    },
+    'If fromIndex < 0 && (-1 * fromIndex) >= array.length, it should search through the entire array.': function () {
+      eq(includes([1], 1, -1), true);
+      eq(includes([1], 1, -2), true);
+    },
+
+    'It should be case-sensitive when comparing strings and characters.': function () {
+      eq(includes(['lower'], 'LOWER'), false);
+      eq(includes(['lower'], 'lower'), true);
+    },
+    'It should use the SameValueZero algorithm to determine whether the given element is found (the same as ===, plus (NaN equal NaN -> true)).': function () {
+      var a = 'a' / 2;
+      var b = 'a' / 2;
+      eq(includes([a], b), true);
+      // var a = 'one' / 2; >>> NaN
+      // var b = 'one' / 2; >>> NaN
+      // a === b; >>> false
+      // SameValueZero(a, b); >>> true
+    },
+    'It should not consider false and 0 as equlas.': function () {
+      eq(includes([false], 0), false);
+    },
+    'It should work the same way with the array-like objects.': function () {
+      // Object that has length property and properties indexed from zero, but it doesn't have Array's built-in methods like forEach() and map()
+      (function() {
+        eq(includes(arguments, 'a'),true);
+      })('a');
+    }
+  });
+</script>

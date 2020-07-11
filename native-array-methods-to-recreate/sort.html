@@ -1,0 +1,354 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The sort() method sorts the elements of an array in place and returns the sorted array.
+    // The default sort order is ascending, built upon converting the elements into strings,
+    // then comparing their sequences of UTF-16 code units values.
+
+  // Example from MDN.
+    // const months = ['March', 'Jan', 'Feb', 'Dec'];
+    // months.sort(); // ["Dec", "Feb", "Jan", "March"]
+    // const array = [1, 30, 4, 21, 100000];
+    // array.sort(); // [1, 100000, 21, 30, 4]
+
+  // Prototype implementation.
+    // function sort(array, compareFunction) {
+    //   var innerFn;
+    //   if (compareFunction === undefined) {
+    //     innerFn = function(a, b) {
+    //       if (String(a) < String(b)) {
+    //         return -1;
+    //       }
+
+    //       if (String(a) > String(b)) {
+    //         return 1;
+    //       }
+
+    //       return 0;
+    //     };
+    //   } else {
+    //     innerFn = compareFunction;
+    //   }
+
+    //   var isSorted = false;
+
+    //   while (!isSorted) {
+    //     for (var i = 0; i < array.length - 1; i++) {
+    //       isSorted = true;
+    //       var a = array[i];
+    //       var b = array[i + 1];
+    //       if (innerFn(a, b) > 0) {
+    //         array[i] = b;
+    //         array[i + 1] = a;
+    //         isSorted = false;
+    //       }
+    //     }
+    //   }
+
+    //   return array;
+    // }
+
+  // Function signature.
+    // sort(array[, compareFunction])
+
+  // Parameters.
+    // array
+      // An array to sort.
+
+    // compareFunction(firstEl, secondEl)
+      // Specifies a function that defines the sort order.
+      // If omitted, the array elements are converted to strings,
+      // then sorted according to each character's Unicode code point value.
+
+      // firstEl
+        //The first element for comparison.
+      //secondEl
+        // The second element for comparison.
+
+  // Return value.
+    // The sorted array.
+    // Note that the array is sorted in place, and no copy is made.
+
+
+  // Function implementation.
+  function sort(array, compareFunction) {
+
+  // PART1 | DECLARE FUNCTION FOR INNER SORT TO COMPARE ARRAY ELEMENTS.
+    function innerSort(prev, next) {
+      // If compareFunction provided, it should be used for comparing array elements.
+      if (prev === undefined && next === undefined) {
+        return 0;
+      } else if (prev === undefined) {
+        return 1;
+      } else if (next === undefined) {
+        return -1;
+      }
+
+      if (compareFunction) {
+        var compareResult = compareFunction(prev, next);
+        return compareResult;
+      }
+
+      // If no compareFunction provided, innerSort should sort an array
+      // in ascending order by converting array elements to strings
+      // and comparing them in UTF-16 code units order.
+      var prevAsString = String(prev);
+      var nextAsString = String(next);
+
+      if (prevAsString < nextAsString) {
+        return -1;
+      }
+
+      if (prevAsString > nextAsString) {
+        return 1;
+      }
+
+      return 0;
+    }
+
+  // PART2 | PUTS ALL EMPTY ELEMENTS TO THE END OF THE ARRAY BEFORE COMPARING ELEMENTS TO SORT.
+    var len = array.length;
+
+    if (len === undefined) {
+      return array;
+    }
+
+    // for (var i = 0; i < len - 1; i++) {
+    //   var prev = array[i];
+    //   var next = array[i + 1];
+    //   if (!array.hasOwnProperty(i)) {
+    //     array[i] = next;
+    //     array[i + 1] = prev;
+    //   }
+    // }
+
+  // PART3 | SORTING ALGORITHM.
+
+  // TODO: It should compare only elements with integer keys that are less than len.
+    var arrayIsSorted = false; // is true when array is sorted.
+    var elementsWasSwapped = false; // is true when elements are swapped.
+    var keys = Object.keys(array);
+
+    // While array is unsorted.
+    while (!arrayIsSorted) {
+      for (var i = 0; i < array.length - 1; i++) {
+        // Pass in elements to compare only if.
+        if (array.hasOwnProperty(i)) {
+          var propertyDescriptor = Object.getOwnPropertyDescriptor(array, i);
+          var isWritable = propertyDescriptor.writable;
+
+          // Check if element has non-writable property and throw TypeError if so.
+          if (isWritable === false) {
+            throw new TypeError('Cannot assign to read only property of object.');
+          }
+        }
+
+        // Process holes.
+        if (!array.hasOwnProperty(i)) {
+          delete array[i];
+        }
+
+        var key = keys[i];
+        var prevValue = array[i];
+        var nextValue = array[i + 1];
+        var notIndexKey = isNaN(+key);
+
+        // Process elements with nonIndex keys in array-like obj to the end.
+        if (notIndexKey) {
+          array[i] = nextValue;
+          array[i + 1] = prevValue;
+        }
+
+        // If previous element < next element, swap them.
+        // Then set elementsWasSwapped to true.
+        if (innerSort(prevValue, nextValue) > 0) {
+          array[i] = nextValue;
+          array[i + 1] = prevValue;
+          // 
+          elementsWasSwapped = true;
+        }
+      }
+
+      // If elements were swapped, hence array still unsorted.
+      // If no elements were swapped in the entire for loop, hence array is sorted.
+      arrayIsSorted = !elementsWasSwapped;
+
+      // Set elementsWasSwapped to false for the next for loop iteration.
+      elementsWasSwapped = !elementsWasSwapped;
+    }
+
+    return array;
+  }
+
+
+  tests({
+    'It should return an array.': function() {
+      eq(sort([]) instanceof Array, true);
+    },
+    'If compareFunction, it should run it at least array.length - 1 times.': function() {
+      var counter = 0;
+      sort([1, 2], function() {
+        counter++;
+      });
+      eq(counter, 1);
+    },
+    'If compareFunction, it should pass in two adjusent elements (a, b) for comparison  to the compareFunction.': function () {
+      var testArray = [1, 2];
+      sort(testArray, function (a, b) {
+        eq(a, 1);
+        eq(b, 2);
+      });
+    },
+    
+
+    'If compareFunction, it should sort an array according to the return value of the compareFunction(a, b).\n\tIf compareFunction(a, b) < 0, it should sort a to an index lower than b (i.e. a comes first).\n\tIf compareFunction(a, b) === 0, it should leave a and b unchanged with respect to each other.\n\tIf compareFunction(a, b) > 0, it should sort b to an index lower than a (i.e. b comes first).': function() {
+      var testArray = [3, 1, 2];
+      var sortedArray = sort(testArray, function(a, b) {
+        return a - b;
+      });
+      eq(sortedArray[0], 1);
+      eq(sortedArray[1], 2);
+      eq(sortedArray[2], 3);
+    },
+
+    'If undefined elements in the array, it should sort them to the end of the array by default.': function () {
+      var counterForArrayWithoutHoles = 0;
+      var arrayWithoutHoles = [3, 1, 2];
+      var sortedArrayWithoutHoles = sort(arrayWithoutHoles, function(a, b) {
+        counterForArrayWithoutHoles++;
+        return a - b;
+      });
+      var counterForArrayWithHoles = 0;
+      var arrayWithHoles = [3, , 1, , 2];
+      var sortedArrayWithHoles = sort(arrayWithHoles, function(a, b) {
+        counterForArrayWithHoles++;
+        return a - b;
+      });
+
+      eq(sortedArrayWithHoles[0], 1);
+      eq(sortedArrayWithHoles[1], 2);
+      eq(sortedArrayWithHoles[2], 3);
+      eq(sortedArrayWithHoles[3], undefined);
+      eq(sortedArrayWithHoles[4], undefined);
+    },
+    'If no compareFunction, it should sort an array in ascending order by converting array elements to strings and comparing them in UTF-16 code units order.': function () {
+      var stringArray = ['Cat', 'Dog', 'Monkey', 'Coala'];
+      var sortedStringArray = sort(stringArray);
+      eq(stringArray[0], 'Cat');
+      eq(stringArray[1], 'Coala');
+      eq(stringArray[2], 'Dog');
+      eq(stringArray[3], 'Monkey');
+
+      var numberArray = [2, 1, 3, 11, 24];
+      var sortedNumberArray = sort(numberArray);
+      eq(sortedNumberArray[0], 1);
+      eq(sortedNumberArray[1], 11);
+      eq(sortedNumberArray[2], 2);
+      eq(sortedNumberArray[3], 24);
+      eq(sortedNumberArray[4], 3);
+
+      var numericStringArray = ['80', '9', '700'];
+      var sortedNumericStringArray = sort(numericStringArray);
+      eq(sortedNumericStringArray[0], '700');
+      eq(sortedNumericStringArray[1], '80');
+      eq(sortedNumericStringArray[2], '9');
+
+      var mixedNumericArray = ['80', '9', '700', 40, 1, 5, 200];
+      var sortedMixedNumericArray = sort(mixedNumericArray);
+      // 1, 200, 40, 5, '700', '80', '9'
+      eq(sortedMixedNumericArray[0], 1);
+      eq(sortedMixedNumericArray[1], 200);
+      eq(sortedMixedNumericArray[2], 40);
+      eq(sortedMixedNumericArray[3], 5);
+      eq(sortedMixedNumericArray[4], '700');
+      eq(sortedMixedNumericArray[5], '80');
+      eq(sortedMixedNumericArray[6], '9');
+    },
+    'It should mutate the array (sort passed in array and then return it).': function () {
+      var array = [2, 1, 3, 11];
+      var sortedArray = sort(array);
+      eq(array === sortedArray, true);
+    },
+
+    // The sort function is intentionally generic;
+    // it does not require that its this value be an Array object.
+    // Therefore, it can be transferred to other kinds of objects for use as a method.
+    'It should work with array-like objects': function() {
+      var arrayLikeObj = {
+        0: 2,
+        1: 1,
+        2: 3,
+        length: 3
+      };
+
+      var sortedArrayLikeObj = sort(arrayLikeObj, function(a, b) {
+        return a - b;
+      });
+
+      eq(sortedArrayLikeObj[0], 1);
+      eq(sortedArrayLikeObj[1], 2);
+      eq(sortedArrayLikeObj[2], 3);
+    },
+
+    'If no length property, it should return passed in array-like object untouched.': function() {
+      var objWithoutLengthProperty = {
+        0: 'b-value',
+        1: 'a-value'
+      };
+      var sorted = sort(objWithoutLengthProperty);
+      eq(sorted[0], 'b-value');
+      eq(sorted[1], 'a-value');
+    },
+    'If passed in array-like object has non-writable properties, it should throw TypeError.': function() {
+      // Cannot assign to read only property of object.
+      var isTypeError = false;
+      var errorMessage = '';
+
+      try {
+        sort('bca');
+      } catch(e) {
+        if (e instanceof TypeError) {
+          isTypeError = true;
+          errorMessage = e.message;
+        }
+      }
+
+      eq(isTypeError, true);
+      eq(errorMessage, 'Cannot assign to read only property of object.');
+    },
+    'If discrete or missing 0-based keys, it should convert them to 0, 1, 2, etc.': function() {
+      // [].sort.call({ 0: 'c', 2: 'e', 4: 'a', length: 5 }); -> { 0: "a", 1: "c", 2: "e", length: 5 }
+      var testObj = {
+        0: 'c',
+        2: 'e',
+        4: 'a',
+        length: 5
+      };
+
+      var sortedObj = sort(testObj);
+      eq(sortedObj[0], 'a');
+      eq(sortedObj[1], 'c');
+      eq(sortedObj[2], 'e');
+    },
+    'If array-like obj with mixed keys (zero-based indexes and other), it should sort elements with keys as 0-based indexes.': function() {
+      // [].sort.call({ name: 'Mik', age: 38, spose: 'Uly', 0: 'c', 2: 'e', 4: 'a', length: 5 });
+      //output: { 0: "a", 1: "c", 2: "e", name: "Mik", age: 38, spose: "Uly", length: 5 }
+      var testObj = {
+        name: 'Mik',
+        age: 38,
+        spose: 'Uly',
+        0: 'c',
+        2: 'e',
+        4: 'a',
+        length: 5
+      };
+
+      var sortedObj = sort(testObj);
+      eq(sortedObj[0], 'a');
+      eq(sortedObj[1], 'c');
+      eq(sortedObj[2], 'e');
+      eq(sortedObj.name, 'Mik');
+    }
+  });
+</script>

@@ -1,0 +1,92 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The pop() method removes the last element from an array and returns that element.
+    // This method changes the length of the array.
+
+  // Example from MDN.
+    // const plants = ['broccoli', 'cauliflower', 'cabbage', 'kale', 'tomato'];
+    // console.log(plants.pop()); // expected output: "tomato"
+    // console.log(plants); // expected output: Array ["broccoli", "cauliflower", "cabbage", "kale"]
+    // plants.pop();
+    // console.log(plants); // expected output: Array ["broccoli", "cauliflower", "cabbage"]
+
+
+  // Prototype implementation.
+    // function pop(array) {
+    //   if (array.length > 0) {
+    //     var lastIndex = array.length - 1;
+    //     var lastElement = array[lastIndex];
+    //     delete array[lastIndex];
+    //     array.length -= 1;
+    //     return lastElement;
+    //   }
+    // }
+
+  // Function signature.
+    // pop(array)
+  // Parameters.
+    // array
+
+  // Return value.
+    // The removed element from the array; undefined if the array is empty.
+
+  // Function implementation.
+  function pop(array) {
+    if (array.length === 0) {
+      return;
+    }
+
+    var length = array.length;
+    var lastIndex = length - 1;
+    var lastElement = array[lastIndex];
+
+    delete array[lastIndex];
+    array.length = length - 1;
+
+    return lastElement;
+  }
+
+
+  tests({
+    'It should remove the last element from an array.': function () {
+      var testArray = [1, 2];
+      pop(testArray);
+      eq(testArray[testArray.length - 1], 1);
+    },
+    'It should return the value of the removed element.': function () {
+      var popedElement = pop([1]);
+      eq(popedElement, 1);
+    },
+    'If array is empty, it should return undefined.': function () {
+      eq(pop([]), undefined);
+      eq(pop([,,]), undefined);
+    },
+    'It should change the length of the array.': function () {
+      var testArray = [1, 2];
+      pop(testArray);
+      eq(testArray.length, 1);
+    },
+    'It could be used with objects resembling arrays.': function () {
+      var objWithLengthProperty = {
+        0: 'first',
+        1: 'second',
+        length: 2
+      };
+      var popedElement = pop(objWithLengthProperty);
+      eq(popedElement, 'second');
+      eq(objWithLengthProperty.length, 1);
+    },
+    'If no object.length, zero-based numerical properties may not behave in any meaningful manner.': function () {
+      var objWithoutLengthProperty = {
+        0: 'first',
+        1: 'second'
+      };
+      var popedElement = pop(objWithoutLengthProperty);
+      eq(popedElement, undefined);
+      eq(objWithoutLengthProperty[1], 'second');
+      eq(objWithoutLengthProperty[0], 'first');
+    }
+  });
+</script>

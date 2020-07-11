@@ -1,0 +1,100 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The join() method creates and returns a new string by concatenating
+    // all of the elements in an array(or an array - like object),
+    // separated by commas or a specified separator string.
+    // If the array has only one item, then that item will be returned without using the separator.
+
+  // Example from MDN.
+    // const elements = ['Fire', 'Air', 'Water'];
+    // elements.join(); // "Fire,Air,Water"
+    // elements.join(''); // "FireAirWater"
+    // elements.join('-'); // "Fire-Air-Water"
+
+  // Prototype implementation.
+    // function join(array, separator) {
+    //   var joinedString = "";
+    //   for (var i = 0; i < array.length; i++) {
+    //     joinedString += array[i];
+    //   }
+    //   return joinedString;
+    // }
+
+  // Function implementation.
+  function join(array, separator) {
+    var joinedArrayToString = '';
+    var itemsSeparator = ',';
+
+    if (arguments.length > 1) {
+      itemsSeparator = '' + separator;
+    }
+
+    for (var i = 0; i < array.length; i++) {
+      var itemToJoin = array[i]
+
+      // Null and undefined should be joined as empty string.
+      if (array[i] === null || array[i] === undefined) {
+        itemToJoin = '';
+      }
+
+      // Handles trailing comma for the first (or only) item in the array.
+      if (i === 0) {
+        joinedArrayToString += itemToJoin;
+      } else {
+        joinedArrayToString = joinedArrayToString + itemsSeparator + itemToJoin;
+      }
+    }
+
+    return joinedArrayToString;
+  }
+
+  tests({
+    'It should return a string.': function () {
+      var joinedArray = join([]);
+      eq(typeof joinedArray === 'string', true);
+    },
+    'It should return a new string by concatenating all of the elements in an array, separated by commas.': function () {
+      eq(join(['a', 1, 'b', 2]), 'a,1,b,2');
+    },
+    'If array has only one item, it should return that item as string without a separator.': function () {
+      eq(join([1]), '1');
+    },
+
+    'If separator is provided, it should be used to separate each pair of adjacent elements of the array.': function () {
+      eq(join(['Apple', 'Banana'], ' + '), 'Apple + Banana');
+    },
+    'If separator is an empty string, it should join all elements to the returned string without any characters in between them.': function () {
+      eq(join(['Apple', 'Banana'], ''), 'AppleBanana');
+    },
+    'If separator is not a string, it should convert it to a string.': function () {
+      eq(join(['first', 'second'], 1), 'first1second');
+      eq(join(['first', 'second'], 1 + 2), 'first3second');
+      eq(join(['first', 'second'], [1, 2]), 'first1,2second');
+      eq(join(['first', 'second'], {}), 'first[object Object]second');
+      eq(join(['first', 'second'], 'a' / 2), 'firstNaNsecond');
+    },
+    'If no separator provided, it should use "," to separate adjacent elements.': function () {
+      eq(join([1, 2]), '1,2');
+    },
+
+    'If an element is undefined, null or an empty array [], it should convert it to an empty string.': function () {
+      var undefinedItem;
+      var nullItem = null;
+      var emptyArrayItem = [];
+      eq(join([1,undefinedItem, nullItem, emptyArrayItem, 2]), '1,,,,2');
+    },
+    'It should deep in the nested arrays.': function() {
+      eq(join([1, [2, 3, [4]]]), '1,2,3,4');
+    },
+    'It should accept an array-like objects to join.': function () {
+      function getArguments() {
+        return arguments;
+      }
+
+      var argumentsArrayLikeObj = getArguments('a', 1, [2, null, 3]);
+      eq(join(argumentsArrayLikeObj), 'a,1,2,,3');
+    }
+  });
+</script>

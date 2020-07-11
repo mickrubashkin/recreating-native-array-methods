@@ -1,0 +1,154 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+// The push() method adds one or more elements to the end of an array and returns the new length of the array.
+
+  // Example from MDN.
+    // const animals = ['pigs', 'goats', 'sheep'];
+    // const count = animals.push('cows');
+
+    // console.log(count); // expected output: 4
+    // console.log(animals); // expected output: Array ["pigs", "goats", "sheep", "cows"]
+
+    // animals.push('chickens', 'cats', 'dogs');
+    // console.log(animals); // expected output: Array ["pigs", "goats", "sheep", "cows", "chickens", "cats", "dogs"]
+
+
+  // Prototype implementation.
+    // function push(array, element) {
+    //   var nextIndex = array.length;
+    //   array[nextIndex] = element;
+    //   return array.length;
+    // }
+
+  // Function signature.
+    // push(array, element1[, ...[, elementN]])
+
+  // Parameters.
+    // array
+
+    //elementN
+      // The element(s) to add to the end of the array.
+
+  // Return value.
+    // The new length property of the object upon which the method was called.
+
+  // Function implementation.
+  function push(array) {
+    var length;
+    var lengthDescriptor = Object.getOwnPropertyDescriptor(array, 'length');
+
+    if (lengthDescriptor && lengthDescriptor.writable === false) {
+      throw new TypeError("Cannot assign to read only property 'length' of object");
+    }
+
+    if (array.length && typeof array.length === 'number') {
+      length = array.length;
+    } else {
+      length = 0;
+    }
+
+    
+
+    var indexToAddElement = length;
+    var numberOfElementsToAdd = arguments.length - 1;
+
+    for (var i = 1; i <= numberOfElementsToAdd; i++) {
+      array[indexToAddElement] = arguments[i];
+      indexToAddElement++;
+      length++;
+    }
+
+    array.length = length;
+    return array.length;
+  }
+
+
+  tests({
+    'It should add passed in as second argumetn element to the end of the array.': function () {
+      var testArray = [1];
+      push(testArray, 2);
+      eq(testArray[1], 2);
+    },
+    'If more then one element passed in as arguments to push, it should append them to the array in the same order they were provided.': function () {
+      var testArray = [];
+      push(testArray, 1, 2, 3);
+      eq(testArray[0], 1);
+      eq(testArray[1], 2);
+      eq(testArray[3]);
+    },
+
+
+    'It should increment the length property of the array by n, where n is number of passed in elements to push.': function () {
+      var testArray = [];
+      push(testArray, 1);
+      eq(testArray.length, 1);
+      push(testArray, 2);
+      eq(testArray.length, 2);
+      push(testArray, 3, 4, 5);
+      eq(testArray.length, 5);
+    },
+    'It should return the new length property of the passed array.': function () {
+      eq(push([], 1), 1);
+      eq(push([], 1, 2, 3), 3);
+    },
+    'It should start inserting the given values to the array from the array.length position.': function () {
+      var testArray = [];
+      testArray.length = 3;
+      push(testArray, 1);
+      eq(testArray[3], 1);
+    },
+
+    
+    'It could be used on Array-like objects.': function () {
+      var fakeArray = {
+        length: 0
+      };
+
+      eq(push(fakeArray, 1), 1);
+      eq(fakeArray[0], 1);
+      eq(push(fakeArray, 2), 2);
+      eq(fakeArray[1], 2);
+    },
+    'If the length property cannot be converted into a number, it should be converted to number starting from 0.': function () {
+      var weirdArrayWithNonNumberLength = {
+        length: "weird length"
+      };
+      eq(push(weirdArrayWithNonNumberLength, 1), 1);
+      eq(weirdArrayWithNonNumberLength.length, 1);
+    },
+    'If no length property, it should create it and use 0 as starting index.': function () {
+      var testObj = {};
+      eq(push(testObj, 1), 1);
+      eq(testObj.length, 1);
+    },
+
+
+    'If passed in first argument is an array-lilke object with non-writable length property,it should throw TypeError.': function () {
+      // Cannot assign to read only property 'length' of object '[object String]'
+      var isTypeError = false;
+      var errorMessage = '';
+      
+      try {
+        push("abc", 'd');
+      } catch(e) {
+        isTypeError = e instanceof TypeError;
+        errorMessage = e.message;
+      }
+
+      eq(isTypeError, true);
+      eq(errorMessage, "Cannot assign to read only property 'length' of object");
+    }
+  });
+
+  // function argsTest() {
+  //   var args = arguments;
+  //   console.log(args);
+  //   Array.prototype.push.call('extra el');
+  //   console.log(args);
+  // }
+  // // debugger;
+  // argsTest(1);
+
+</script>

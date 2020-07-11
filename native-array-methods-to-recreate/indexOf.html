@@ -1,0 +1,112 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The indexOf() method returns the first index at which a given element can be found in the array,
+    // or -1 if it is not present.
+
+  // Example from MDN.
+    // const beasts = ['ant', 'bison', 'camel', 'duck', 'bison'];
+    // beasts.indexOf('bison');    >>> // expected output: 1
+    // beasts.indexOf('bison', 2); >>> // expected output: 4
+    // beasts.indexOf('giraffe');  >>> // expected output: -1
+
+  // Prototype implementation.
+    // function indexOf(array, searchElement, fromIndex) {
+    //   var startingIndex = fromIndex || 0;
+    //   for (var i = startingIndex; i < array.length; i++) {
+    //     if (searchElement === array[i]) {
+    //       return i;
+    //     }
+    //   }
+
+    //   return -1;
+    // }
+
+  // Function signature.
+    // indexOf(array, searchElement[, fromIndex])
+
+  // Parameters.
+    // searchElement
+      // Element to locate in the array.
+    
+    // fromIndex (Optional)
+      // The index to start the search at.
+
+  // Return value.
+    // The first index of the element in the array; -1 if not found.
+
+  // Function implementation.
+  function indexOf(array, searchElement, fromIndex = 0) {
+    var startingIndex = fromIndex;
+
+    if (fromIndex < 0) {
+      startingIndex = array.length + fromIndex;
+    }
+
+    if (typeof fromIndex !== 'number') {
+      startingIndex = 0;
+    }
+
+    for (var i = startingIndex; i < array.length; i++) {
+      if (searchElement === array[i]) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  tests({
+    'If searchElement is founded, it should return the position of that element in the array.': function () {
+      var searchElement = 2;
+      var indexOfSearchElement = indexOf([1, 2, 3], searchElement);
+      eq(indexOfSearchElement, 1);
+    },
+    'It should return the first index at which searchElement can be found.': function () {
+      var searchElement = 2;
+      var indexOfSearchElement = indexOf([2, 2, 3], searchElement);
+      eq(indexOfSearchElement, 0);
+    },
+    'If searchElement is not founded, it should return -1.': function () {
+      var searchElement = 2;
+      var indexOfSearchElement = indexOf([1], searchElement);
+      eq(indexOfSearchElement, -1);
+    },
+    'It should use strict equality to compare searchElement to elements of the array.': function () {
+      var searchElement = 2;
+      var indexOfSearchElement = indexOf([1, '2', 3], searchElement);
+      eq(indexOfSearchElement, -1);
+    },
+
+    'It should accept fromIndex to start the search from as third argument.': function () {
+      var searchElement = 2;
+      var foundedIndex = indexOf([2, 3, 2], searchElement, 1);
+      eq(foundedIndex, 2);
+    },
+    'If fromIndex >= array.length, it should return -1.': function () {
+      var foundedIndex = indexOf([2], 2, 1);
+      eq(foundedIndex, -1);
+    },
+    'If fromIndex is negative, it should use it as offset from the end of the array.': function () {
+      var foundedIndex = indexOf([3, 2, 3], 3, -1);
+      eq(foundedIndex, 2);
+    },
+    'It should use 0 as default value of the fromIndex.': function () {
+      var foundedIndex = indexOf([1, 1, 1], 1);
+      eq(foundedIndex, 0);
+    },
+
+    'It should search from left to right.': function () {
+      var foundedIndex = indexOf([1, 2, 1], 1);
+      eq(foundedIndex, 0);
+    },
+    'If fromIndex is negative, it should search from left to rigth.': function () {
+      var foundedIndex = indexOf([1, 2, 3, 2], 2, -3);
+      eq(foundedIndex, 1);
+    },
+    'If fromIndex is not a number, it should use the default value 0.': function() {
+      var foundedIndex = indexOf([1, 2, 3], 2, 'not a number');
+      eq(foundedIndex, 1);
+    }
+  });
+</script>

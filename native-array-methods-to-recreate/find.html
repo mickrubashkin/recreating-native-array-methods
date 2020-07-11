@@ -1,0 +1,207 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose:
+    // The find() method returns the value of the first element in the provided array
+    // that satisfies the provided testing function.
+  
+  // Example from MDN:
+    // const array1 = [5, 12, 8, 130, 44];
+    // const found = array1.find(element => element > 10);
+    // console.log(found); // expected output: 12
+
+  // Prototype implementation:
+    // function find(array, callback) {
+    //   for (var i = 0; i < array.length; i++) {
+    //     var element = array[i];
+    //     if (callback(element)) {
+    //       return i;
+    //     }
+    //   }
+    // }
+
+  // Function signature:
+    // find(array, callback[, thisArg])
+
+  // Callback parameters:
+    // currentElement
+    // currentIndex
+    // originalArray
+
+  // Return value:
+    // The value of the first element in the array that satisfies the provided testing function.
+    // Otherwise, undefined is returned.
+
+  // Function implementation.
+  function myFind(array, callback, thisArg) {
+    var myFindCallback = callback;
+    var length = array.length;
+
+    if (thisArg) {
+      myFindCallback = myFindCallback.bind(thisArg);
+    }
+
+    for (var i = 0; i < length; i++) {
+      if (myFindCallback(array[i], i, array)) {
+        return array[i];
+      }
+    }
+  }
+
+  tests({
+    'It should run the callback on each value in the array.': function() {
+      var numberOfTimesCallbackHasRun = 0;
+      myFind([1, 2, 3], function() {
+        numberOfTimesCallbackHasRun++;
+      });
+      eq(numberOfTimesCallbackHasRun, 3);
+    },
+    'It should run the callback for every index of the array, including holes.': function() {
+      var numberOfTimesCallbackHasRun = 0;
+      var weirdArray = [, 1, , 2, ,];
+      var weirdArrayLength = weirdArray.length;
+      myFind([, 1, , 2, ,], function () {
+        numberOfTimesCallbackHasRun++;
+      });
+      eq(numberOfTimesCallbackHasRun, weirdArrayLength);
+    },
+
+    'It should pass in the current element in the array to the callback as the first argument.': function() {
+      myFind([1], function(currentElement) {
+        eq(currentElement, 1);
+      })
+    },
+    'It should pass in the current index as the second optional argument to the callback.': function() {
+      myFind([1], function (currentElement, currentIndex) {
+        eq(currentIndex, 0);
+      })
+    },
+    'It should pass in the original array as the third optinal argument to the callback.': function() {
+      var testArray = [1];
+      myFind(testArray, function (currentElement, currentIndex, originalArray) {
+        eq(originalArray, testArray);
+      })
+    },
+
+    'It should accept an optional thisArg to use as this inside callback.': function() {
+      var optionalThisArg = {
+        description: 'Optional thisArg.'
+      };
+      myFind([1], function() {
+        eq(this.description, 'Optional thisArg.');
+      }, optionalThisArg);
+    },
+    'If thisArg is provided, it should be used as this value inside each invocation of the callback.': function() {
+      var testArray = [1, 2, 3];
+      var optionalThisArg = {
+        description: 'Optional thisArg.',
+        visitedIndexes: [],
+        visitedElements: []
+      };
+      myFind(testArray, function (currentElement, currentIndex) {
+        this.visitedIndexes.push(currentIndex);
+        this.visitedElements.push(currentElement);
+      }, optionalThisArg);
+
+      testArray.forEach(function(el, i, arr) {
+        eq(optionalThisArg.visitedIndexes[i], i);
+        eq(optionalThisArg.visitedElements[i], arr[i]);
+      });
+    },
+    'If thisArg is not provided, it should use undefined as this value inside each invocation of the callback (in strict mode).': function() {
+      // From the MDN docs.
+      // For a strict mode function if this unspecified, this will be undefined.
+      // That means that in browsers it's no longer possible to reference the window object through this inside a strict mode function.
+      myFind([1], function() {
+        'use strict';
+        eq(this === undefined, true);
+        eq(this === window, false);
+      });
+    },
+    'If thisArg is not provided, it should reference a global window object as this value inside each invocation of the callback (in normal mode).': function() {
+      myFind([1], function () {
+        eq(this, window);
+        eq(this.undefined === undefined, true);
+        eq(this.description === undefined, true);
+      });
+    },
+    'It should immediately return the value of the elemet on which callback returns a truthy value.': function() {
+      var testArray = [1, 2, 3];
+      var numberOfTimesCallbackHasRun = 0;
+      function predicate(number) {
+        numberOfTimesCallbackHasRun++;
+        return number === 2;
+      };
+      var valueMyFindReturn = myFind(testArray, predicate);
+      eq(valueMyFindReturn, 2);
+      eq(numberOfTimesCallbackHasRun, 2);
+    },
+    'If the callback does not return a truthy value for any element in the array, it should return undefined.': function() {
+      var testArray = [1, 2, 3];
+      function predicate(number) {
+        return number > 5;
+      };
+      var valueMyFindReturn = myFind(testArray, predicate);
+      eq(valueMyFindReturn === undefined, true);
+    },
+
+    // It should set the range of the elements to be processed before the first invocation of callback.
+    'It should set the range of the elements to be processed before the first invocation of callback.': function() {
+      var numberOfTimesCallbackHasRun = 0;
+      myFind([1, 2], function (currentelement, currentIndex, array) {
+        // Add extra element to the array on the first callback call.
+        if (currentIndex === 0) {
+          array.push('extra 3rd element');
+        }
+        numberOfTimesCallbackHasRun++;
+      });
+      eq(numberOfTimesCallbackHasRun, 2);
+    },
+    'If callback adds extra elements to the array, it should not run the callback on this elements.': function() {
+      var testArray = [1, 2];
+      var numberOfTimesCallbackHasRun = 0;
+      var visitExtraElement = false;
+      myFind(testArray, function(currentelement, currentIndex, array) {
+        // Add extra element to the array on the first callback call.
+        if (currentIndex === 0) {
+          array.push('extra 3rd element');
+        }
+
+        // Detect if visit extra element.
+        if (currentIndex === 3) {
+          visitExtraElement = true;
+        }
+
+        numberOfTimesCallbackHasRun++;
+      });
+      eq(numberOfTimesCallbackHasRun, 2);
+      eq(testArray[2], 'extra 3rd element');
+      eq(visitExtraElement, false);
+    },
+    'If callback changes an existing, yet unvisited element of the array, it should pass to the callback the updated value.': function() {
+      var testArray = [1, 2];
+      var valueMyFindReturn = myFind(testArray, function (currentElement, currentIndex, array) {
+        // Change second element of the array on the first callback call.
+        if (currentIndex === 0) {
+          array[1] = 'changed value';
+        }
+
+        return currentElement === 'changed value';
+      });
+      eq(valueMyFindReturn, 'changed value');
+      eq(testArray[1], 'changed value');
+    },
+    'It should run the callback on the deleted elements.': function() {
+      var testArray = [1, 2, 3];
+      var numberOfTimesCallbackHasRun = 0;
+      myFind(testArray, function(currentElement, currentIndex, array) {
+        // Delete third element on the first callback' call.
+        if (currentIndex === 0) {
+          delete array[2];
+        }
+        numberOfTimesCallbackHasRun++;
+      });
+      eq(numberOfTimesCallbackHasRun, 3);
+    }
+  });
+</script>

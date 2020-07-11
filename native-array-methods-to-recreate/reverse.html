@@ -1,0 +1,193 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The reverse() method reverses an array in place.
+    // The first array element becomes the last, and the last array element becomes the first.
+
+  // Example from MDN.
+    // const array1 = ['one', 'two', 'three'];
+    // const reversed = array1.reverse();
+    // console.log('reversed:', reversed);// expected output: "reversed:" Array ["three", "two", "one"]
+    // // Careful: reverse is destructive -- it changes the original array.
+    // console.log('array1:', array1); // expected output: "array1:" Array ["three", "two", "one"]
+
+  // Prototype implementation.
+    // function reverse(array) {
+    //   var length = array.length;
+    //   var middle = Math.floor(length / 2);
+
+    //   for (var i = 0; i < middle; i++) {
+    //     var indexToFlip = length - 1 - i;
+    //     array[i] = array[indexToFlip];
+    //   }
+
+    //   return array;
+    // }
+
+  // Function signature.
+    // reverse(array)
+
+  // Parameters.
+    // array
+
+  // Return value.
+    // reversed array
+
+  // Function implementation.
+  function reverse(array) {
+    
+    // If non-writable length property, throw TypeError
+    var lengthPropertyDescriptor = Object.getOwnPropertyDescriptor(array, 'length');
+
+    if (lengthPropertyDescriptor && !lengthPropertyDescriptor.writable) {
+      throw new TypeError('Cannot assign to read only property of object');
+    }
+  
+    // If argument type is not an Object, return new Object(arg) and do nothing.
+    if (array instanceof Object === false) {
+      return new Object(array);
+
+    // If argument is undefined or null, throw new TypeError
+    } else if (typeof array === 'undefined' || array === null) {
+      throw new TypeError('Cannot convert undefined or null to object');
+    }
+
+  
+
+  // Length normalisation.
+    var length = Number(lengthPropertyDescriptor.value);
+    // If NaN, make it 0
+    if (Number.isNaN(length)) {
+      length = 0;
+    }
+    // Make length integer
+    length = Number.parseInt(length);
+    // If length <= 0, make it 0
+    if (length <= 0) {
+      length = 0;
+    }
+
+  // Main reverse logic.
+    var middle = Math.floor(length / 2);
+    var lowerIndex = 0;
+
+    for (var i = lowerIndex; i < middle; i++) {
+      var upperIndex = length - 1 - i;
+      var lowerItem = array[i];
+      var upperItem = array[upperIndex];
+      array[i] = upperItem;
+      array[upperIndex] = lowerItem;
+    }
+
+    return array;
+  }
+
+
+  tests({
+    'It should reverse the array: the first element of the array becomes the last, and the last element becomes the first.': function () {
+      var testArray = [1, 2];
+      reverse(testArray);
+      eq(testArray[0], 2);
+      eq(testArray[1], 1);
+    },
+    'It should return reversed array.': function () {
+      var testArray = [1, 2];
+      var reversedArray = reverse(testArray);
+      eq(reversedArray === testArray, true);
+    },
+    'It should mutate the array.': function () {
+      var testArray = [1, 2];
+      var reversedArray = reverse(testArray);
+      eq(testArray[0], 2);
+      eq(testArray[1], 1);
+    },
+    'It should work with array-like objects.': function () {
+      var arrayLikeObj = {
+        0: 'first',
+        1: 'second',
+        length: 2
+      };
+      reverse(arrayLikeObj);
+      eq(arrayLikeObj[0], 'second');
+      eq(arrayLikeObj[1], 'first');
+    },
+
+    'If non-writable object.length property, it should throw TypeError.': function () {
+      var string = 'ab';
+      var isTypeError = false;
+      var errorMessage = '';
+
+      try {
+        reverse(string);
+      } catch(e) {
+        if (e instanceof TypeError) {
+          isTypeError = true;
+          errorMessage = e.message;
+        }
+      }
+
+      eq(isTypeError, true);
+      eq(errorMessage, 'Cannot assign to read only property of object');
+    },
+    'If passed in argument is not an object, it should convert it to object.': function () {
+      // number >>> new Number
+      // bigInt >>> new BigInt
+      // boolean >>> new Boolean
+      // symbol >>> new Symbol
+      var myNumber = 1;
+      var myBigInt = 1n;
+      var myBoolean = true;
+      var mySymbol = Symbol('foo');
+      var result;
+
+      result = reverse(myNumber);
+      eq(result instanceof Number, true);
+
+      result = reverse(myBigInt);
+      eq(result instanceof BigInt, true);
+
+      result = reverse(myBoolean);
+      eq(result instanceof Boolean, true);
+
+      result = reverse(mySymbol);
+      eq(result instanceof Symbol, true);
+    },
+    'If passed in argument is null or undefined, it should throw TypeError.': function () {
+      // Cannot convert undefined or null to object
+      var myUndefined = undefined;
+      var myNull = null;
+      var isTypeError = false;
+      var errorMessage = '';
+      var result;
+
+      // Test for undefined.
+      try {
+        reverse(myUndefined);
+      } catch(e) {
+        if (e instanceof TypeError) {
+          isTypeError = true;
+          errorMessage = e.message;
+        }
+      }
+
+      eq(isTypeError, true);
+      eq(errorMessage, 'Cannot convert undefined or null to object');
+
+      // Test for null
+      isTypeError = false;
+
+      try {
+        reverse(myNull);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          isTypeError = true;
+          errorMessage = e.message;
+        }
+      }
+
+      eq(isTypeError, true);
+      eq(errorMessage, 'Cannot convert undefined or null to object');
+    }
+  });
+</script>

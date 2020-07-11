@@ -1,0 +1,167 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The concat() method is used to merge two or more arrays.
+
+  // Example from MDN.
+    // const array1 = ['a', 'b', 'c'];
+    // const array2 = ['d', 'e', 'f'];
+    // const array3 = array1.concat(array2); >>> ["a", "b", "c", "d", "e", "f"]
+
+  // Prototype implementation.
+    // function concat(oldArray) {
+    //   var shallowCopy = Array.from(oldArray);
+
+    //   for (var i = 1; i < arguments.length; i++) {
+    //     var elementToAdd = arguments[i];
+
+    //     if (Array.isArray(elementToAdd)) {
+    //       for (var j = 0; j < elementToAdd.length; j++) {
+    //         newArray.push(arrayToAdd[j]);
+    //       }
+    //     } else {
+    //       newArray.push(elementToAdd);
+    //     }
+    //   }
+    //   return newArray;
+    // }
+
+  // Function signature.
+    // concat(oldArray[, value1[, value2[, ...[, valueN]]]])
+
+  // Function parameters.
+    // valueN
+      // Arrays and/or values to concatenate into a new array.
+      // If all valueN parameters are omitted, concat returns a shallow copy of the existing array on which it is called.
+
+  // Return value.
+    // A new Array instance.
+
+  // Function implementation.
+  function concat(oldArray) {
+    var newArray = [];
+
+    for (var i = 0; i < oldArray.length; i++) {
+      var copiedFromOldArrayElement = oldArray[i];
+      newArray.push(copiedFromOldArrayElement);
+    }
+
+    for (var i = 1; i < arguments.length; i++) {
+      var elementToCopy = arguments[i];
+      if (Array.isArray(elementToCopy)) {
+        for (var j = 0; j < elementToCopy.length; j++) {
+          var valueToCopy = elementToCopy[j];
+          newArray.push(valueToCopy);
+        }
+      } else {
+        newArray.push(elementToCopy);
+      }
+    }
+
+    return newArray;
+  }
+
+  tests({
+    'It should return an array.': function () {
+      var concatedArray = concat([1]);
+      eq(Array.isArray(concatedArray), true);
+    },
+    'If no valueN, it should return a new array consisting of the elements in oldArray.': function () {
+      var oldArray = [1, 2, 3];
+      var newArray = concat(oldArray);
+      eq(newArray === oldArray, false);
+      eq(newArray.length, 3);
+      newArray.forEach(function(newArrayElement, i) {
+        var oldArrayElement = oldArray[i];
+        eq(newArrayElement, oldArrayElement);
+      });
+    },
+    'If valueN, and valueN is an array, it should return a new array that contains copies of the oldArray elements combined with the copies of the valueN array elements.': function () {
+      var oldArray = [1];
+      var arrayArg1 = [2];
+      var arrayArg2 = [3];
+      var concatedArray = concat(oldArray, arrayArg1, arrayArg2);
+      eq(concatedArray.length, 3);
+      eq(concatedArray[0], 1);
+      eq(concatedArray[1], 2);
+      eq(concatedArray[2], 3);
+    },
+    'If valueN, and valueN is not an array, it should return a new array that contains copies of the oldArray elements combined with copied values of arguments itself.': function () {
+      var oldArray = [1];
+      var value1 = 2;
+      var value2 = 3;
+      var concatedArray = concat(oldArray, value1, value2);
+      eq(concatedArray.length, 3);
+      eq(concatedArray[0], 1);
+      eq(concatedArray[1], 2);
+      eq(concatedArray[2], 3);
+    },
+    'It should accept and copy valueN both as array and as primitive': function() {
+      var oldArray = [1];
+      var arrayArg = ['2'];
+      var primitiveArg = 3;
+      var newArray = concat(oldArray, arrayArg, primitiveArg);
+
+      eq(newArray[0], 1);
+      eq(newArray[1], '2');
+      eq(newArray[2], 3);
+    },
+    'It should not recurse into nested array arguments.': function () {
+      var oldArray = [1];
+      var nestedArray = [2, 3];
+      var arrayArg = [nestedArray, 4];
+      var concatedArray = concat(oldArray, arrayArg);
+      eq(concatedArray.length, 3);
+      eq(concatedArray[0], 1);
+      eq(concatedArray[1], nestedArray);
+      eq(concatedArray[2], 4);
+    },
+    'If copied element is an Object reference, any operation on the new array should have an effect on the original array.': function () {
+      var nestedArray = ['nested array'];
+      var nestedObject = { value: 'nested object' };
+      var oldArray = [nestedArray, nestedObject];
+      var newArray = concat(oldArray);
+
+      newArray[0].push('added to the new array');
+      newArray[1].value = 'changed from new array';
+
+      eq(oldArray[0][1], 'added to the new array');
+      eq(oldArray[1].value, 'changed from new array');
+    },
+    'If copied element is an Object reference, any operation on the original array should have an effect on the new array.': function () {
+      var nestedArray = ['nested array'];
+      var nestedObject = { value: 'nested object' };
+      var oldArray = [nestedArray, nestedObject];
+      var newArray = concat(oldArray);
+
+      oldArray[0].push('added to the new array');
+      oldArray[1].value = 'changed from new array';
+
+      eq(newArray[0][1], 'added to the new array');
+      eq(newArray[1].value, 'changed from new array');
+    },
+    'If copied element is one of the primitives, any operation on the new array should not have an effect on the original array.': function () {
+      var oldArray = [1, 'string', true];
+      var newArray = concat(oldArray);
+      newArray[0] = 2;
+      newArray[1] = 'yay';
+      newArray[2] = false;
+
+      eq(oldArray[0], 1);
+      eq(oldArray[1], 'string');
+      eq(oldArray[2], true);
+    },
+    'If copied element is one of the primitives, any operation on the original array should not have an effect on the new array.': function () {
+      var oldArray = [1, 'string', true];
+      var newArray = concat(oldArray);
+      oldArray[0] = 2;
+      oldArray[1] = 'yay';
+      oldArray[2] = false;
+
+      eq(newArray[0], 1);
+      eq(newArray[1], 'string');
+      eq(newArray[2], true);
+    }
+  });
+</script>

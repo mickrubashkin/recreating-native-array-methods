@@ -1,0 +1,96 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The shift() method removes the first element from an array and returns that removed element.
+    // This method changes the length of the array.
+
+  // Example from MDN.
+    // const array1 = [1, 2, 3];
+    // const firstElement = array1.shift();
+    // console.log(array1); // expected output: Array [2, 3]
+    // console.log(firstElement); // expected output: 1
+
+  // Prototype implementation.
+    // function shift(array) {
+    //   var len = array.length;
+    //   var firstElement = array[0];
+
+    //   delete array[0];
+    //   array.length = len - 1;
+
+    //   return firstElement;
+    // }
+
+  // Function signature.
+    // shift(array)
+
+  // Parameters.
+    // array
+
+  // Return value.
+    //The removed element from the array; undefined if the array is empty.
+
+  // Function implementation.
+  function shift(array) {
+    if (!array.hasOwnProperty('length')) {
+      array.length = 0;
+    }
+
+    if (array.length === 0) {
+      return;
+    }
+
+    var length = array.length;
+    var firstElement = array[0];
+
+    for (var i = 1; i < length; i++) {
+      array[i - 1] = array[i];
+    }
+
+    array.length = length - 1;
+
+    return firstElement;
+  }
+
+  tests({
+    'It should remove the first element from the array.': function () {
+      var array = [1, 2];
+      shift(array);
+      eq(array[0], 2);
+    },
+    'It should return the value of the removed element.': function () {
+      var shiftedItem = shift([1]);
+      eq(shiftedItem, 1);
+    },
+    'If array is empty, it should return undefined.': function () {
+      eq(shift([]), undefined);
+      eq(shift([,,]), undefined);
+    },
+    'It should change the length of the array by subtracting 1.': function () {
+      var array = [1, 2];
+      shift(array);
+      eq(array.length, 1);
+    },
+    'It could be used with objects resembling arrays.': function () {
+      var objWithLengthProperty = {
+        0: 'first item',
+        1: 'second item',
+        length: 2
+      };
+      var shiftedItem = shift(objWithLengthProperty);
+      eq(objWithLengthProperty.length, 1);
+      eq(objWithLengthProperty[0], 'second item');
+    },
+    'If no object.length, zero-based numerical properties may not behave in any meaningful manner.': function () {
+      var objWithoutLengthProperty = {
+        0: 'first',
+        1: 'second'
+      };
+      var shiftedItem = shift(objWithoutLengthProperty);
+      eq(shiftedItem, undefined);
+      eq(objWithoutLengthProperty[1], 'second');
+      eq(objWithoutLengthProperty[0], 'first');
+    }
+  });
+</script>

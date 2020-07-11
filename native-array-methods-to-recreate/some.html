@@ -1,0 +1,192 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    //The some() method tests whether at least one element in the array passes the test implemented by the provided callback.
+    //  It returns a Boolean value.
+
+  // Example from MDN.
+    // const array = [1, 2, 3, 4, 5];
+    // const even = (element) => element % 2 === 0;
+    // console.log(array.some(even)); // expected output: true
+
+  // Prototype implementation.
+    // function some(array, callback) {
+    //   for (var i = 0; i < array.length; i++) {
+    //     if (callback(element)) {
+    //       return true;
+    //     }
+    //   }
+    //   return false;
+    // }
+
+  // Function signature.
+    // some(array, callback[, thisArg])
+
+  // Callback parameters.
+    // currentElement
+    // currentIndex
+    // originalArray
+
+  // Return value.
+    // true if the callback function returns a truthy value for at least one element in the array.
+    // Otherwise, false.
+
+  // Function implementation.
+  function some(array, callback, thisArg) {
+    var someCallback = callback;
+    var length = array.length;
+    var startingIndex = 0;
+
+    while (startingIndex in array === false && startingIndex < length) {
+      startingIndex++;
+    }
+
+    if (thisArg) {
+      someCallback = someCallback.bind(thisArg);
+    }
+
+    for (var i = startingIndex; i < length; i++) {
+      if (i in array) {
+        if (someCallback(array[i], i, array)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  tests({
+    'It should run callback on each element of the array.': function () {
+      var numberOfTimesCallbackHasRun = 0;
+      some([1, 2, 3], function() {
+        numberOfTimesCallbackHasRun++;
+      });
+      eq(numberOfTimesCallbackHasRun, 3);
+    },
+    'It should pass in current element as the first argument to the callback.': function () {
+      some([1], function(currentElement) {
+        eq(currentElement, 1);
+      });
+    },
+    'It should pass in current index of the array as the second argument to the callback.': function () {
+      some([1], function (currentElement, currentIndex) {
+        eq(currentIndex, 0);
+      });
+    },
+    'It should pass in original array as the third argument to the callback.': function () {
+      var testArray = [1, 2, 3];
+      some(testArray, function(currentElement, currentIndex, originalArray) {
+        eq(originalArray, testArray);
+      });
+    },
+    'It should accept optional thisArg to be used as this value inside the callback.': function () {
+      var optionalThisObject = {
+        description: 'Acceptable thisArg inside the callback.'
+      };
+      some([1], function() {
+        eq(this.description, 'Acceptable thisArg inside the callback.');
+      }, optionalThisObject);
+    },
+
+
+    'It should immediately return true if callback returns a truthy value for some element of the array.': function () {
+      var testArray = [1, 2, 3];
+      var numberOfTimesCallbackHasRun = 0;
+      var valueThatSomeReturns = some(testArray, function() {
+        numberOfTimesCallbackHasRun++;
+        return true;
+      });
+
+      eq(valueThatSomeReturns, true);
+      eq(numberOfTimesCallbackHasRun, 1);
+    },
+
+    'It should return false if callback returns falsy value for all the array elements.': function () {
+      var valueThatSomeReturns = some([1], function() {
+        return false;
+      });
+      eq(valueThatSomeReturns, false);
+    },
+    'It should return false on an empty array.': function () {
+      eq(some([], function() {}), false);
+    },
+
+
+    'It should not run callback on the holes.': function () {
+      var arrayWithHoles = [, 1, , ,2];
+      var numberOfTimesCallbackHasRun = 0;
+      var runOnHoles = false;
+      var numberOfTimesCallbackHasRun = 0;
+
+      some(arrayWithHoles, function(currentElement, currentIndex) {
+        if (currentIndex === 0 || currentIndex === 2 || currentIndex === 3) {
+          runOnHoles = true;
+        }
+        numberOfTimesCallbackHasRun++;
+      });
+
+      eq(numberOfTimesCallbackHasRun, 2);
+      eq(runOnHoles, false);
+    },
+
+    'It should not run on the elements appended to the array after the call to some begins.': function () {
+      var testArray = [1, 2, 3];
+      var numberOfTimesCallbackHasRun = 0;
+      var extraElementWasVisited = false;
+
+      some(testArray, function (currentElement, currentIndex, originalArray) {
+        // Append extra element on the first invokation of callback.
+        if (currentIndex === 0) {
+          originalArray.push('extra fourth element');
+        }
+
+        // Check if it runs the callback on the extra fourth element.
+        if (currentIndex === 3) {
+          extraElementWasVisited = true;
+        }
+
+        numberOfTimesCallbackHasRun++;
+      });
+
+      eq(numberOfTimesCallbackHasRun, 3);
+      eq(extraElementWasVisited, false);
+      eq(testArray[3], 'extra fourth element');
+    },
+    'If existing elements of the array are changed, it should pass to the callback updated values.': function () {
+      var testArray = [1, 2, 3];
+      some(testArray, function (currentElement, currentIndex, originalArray) {
+        // Updates value of the third element on the first invocation of the callback.
+        if (currentIndex === 0) {
+          originalArray[2] = 'updated element';
+        }
+        // Checks the value of the updated element when callback runs on it.
+        if (currentIndex === 2) {
+          eq(currentElement, 'updated element');
+        }
+      });
+    },
+    'It should not run callback on the deleted elements.': function () {
+      var testArray = [1, 2, 3];
+      var deletedElementWasVisited = false;
+      var numberOfTimesCallbackHasRun = 0;
+
+      some(testArray, function (currentElement, currentIndex, originalArray) {
+        // Delete second element on the first invocation of the callback.
+        if (currentIndex === 0) {
+          delete originalArray[1];
+        }
+        // Check if the callback runs on the deleted second element.
+        if (currentIndex === 1) {
+          deletedElementWasVisited = true;
+        }
+        numberOfTimesCallbackHasRun++;
+      });
+
+      eq(numberOfTimesCallbackHasRun, 2);
+      eq(deletedElementWasVisited, false);
+      eq(testArray[1] === undefined, true);
+    }
+  });
+</script>

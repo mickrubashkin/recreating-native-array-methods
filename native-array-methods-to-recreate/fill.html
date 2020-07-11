@@ -1,0 +1,287 @@
+<script src="../simpletest.js"></script>
+<script>
+
+  // Function purpose.
+    // The fill() method changes all elements in an array to a static value,
+    // from a start index (default 0) to an end index (default array.length).
+    // It returns the modified array.
+  
+
+  // Example from MDN.
+    // const array1 = [1, 2, 3, 4];
+
+    // // fill with 0 from position 2 until position 4
+    // console.log(array1.fill(0, 2, 4)); // expected output: [1, 2, 0, 0]
+
+    // // fill with 5 from position 1
+    // console.log(array1.fill(5, 1)); // expected output: [1, 5, 5, 5]
+
+    // console.log(array1.fill(6)); // expected output: [6, 6, 6, 6]
+
+  // Prototype implementation.
+    // function fill(array, value, fromIndex, untilIndex) {
+    //   for (var i = fromIndex; i < untilIndex; i++) {
+    //     array[i] = value;
+    //   }
+
+    //   return array;
+    // }
+
+  // Function signature.
+    // fill(array, value[, start[, end]])
+
+  // Parameters.
+    // array
+
+    // value
+      // Value to fill the array with.
+    // start (Optional)
+      // Start index, default 0.
+    // end (Optional)
+      // End index, default arr.length.
+
+  // Return value.
+    // The modified array, filled with value.
+
+  // Function implementation.
+  function fill(array, value, start, end) {
+    var lengthDescriptor = Object.getOwnPropertyDescriptor(array, 'length'); 
+    var length = array.length;
+    var startFromIndex, endBeforeIndex;
+
+    // Handle no length property.
+    if (typeof length !== 'number') {
+      return array;
+    }
+    
+    // Handle non-writable length property.
+    if (length && lengthDescriptor.writable === false) {
+      throw new TypeError('Cannot assign to read only property length of object.');
+    }
+
+    // Normalize start index.
+    if (arguments.length >= 3) {
+      startFromIndex = Number(start);
+      startFromIndex = parseInt(startFromIndex);
+      startFromIndex = startFromIndex || 0;
+    } else {
+      startFromIndex = 0;
+    }
+
+    // Normalize end index.
+    if (arguments.length >= 4) {
+      endBeforeIndex = Number(end);
+      endBeforeIndex = parseInt(endBeforeIndex);
+    } else {
+      endBeforeIndex = length;
+    }
+
+    // Handle negative start index.
+    if (startFromIndex < 0) {
+      startFromIndex = length + startFromIndex;
+    }
+
+    // Handle negative end index.
+    if (endBeforeIndex < 0) {
+      endBeforeIndex = length + endBeforeIndex;
+    }
+
+    // Filling the array.
+    for (var i = startFromIndex; i < endBeforeIndex; i++) {
+      array[i] = value;
+    }
+
+    return array;
+  }
+
+
+  tests({
+    'It should change all elements in an array to a static value, passed in as argument.': function () {
+      var testArray = [1, 2];
+      var valueToFill = 0;
+      fill(testArray, valueToFill);
+      eq(testArray[0], valueToFill);
+      eq(testArray[1], valueToFill);
+    },
+    'If the first parameter is an object, each slot in the array will reference that object.': function () {
+      var testArray = [1, 2];
+      var objectToFill = {};
+      fill(testArray, objectToFill);
+
+      testArray[0].description = 'changed by 1st item';
+      eq(testArray[1].description, 'changed by 1st item');
+      eq(objectToFill.description, 'changed by 1st item');
+    },
+    'If startIndex provided, it should change all elements from starIndex.': function () {
+      var testArray = [1, 2];
+      var filledArray = fill(testArray, 0, 1);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 0);
+    },
+    'If endIndex provided, it should change all elements from startIndex to endIndex (not including endIndex).': function () {
+      var testArray = [1, 2];
+      var filledArray = fill(testArray, 0, 0, 1);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 2);
+    },
+    'It should return modified array itself, not a copy.': function () {
+      var testArray = [1];
+      var filledArray = fill(testArray, 0);
+      eq(filledArray === testArray, true);
+    },
+    'If start is negative, it is treated as array.length + start.': function () {
+      var filledArray = fill([1, 2], 0, -1);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 0);
+    },
+    'If end is negative, it is treated as array.length + end.': function () {
+      var filledArray = fill([1, 2], 0, 0, -1);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 2);
+    },
+
+
+    'It should work whith array-like objects, not only arrays.': function () {
+      var objWithLengthProperty = {
+        0: 'first',
+        1: 'second',
+        length: 2
+      };
+      var filledObj = fill(objWithLengthProperty, 'new filled value');
+      eq(objWithLengthProperty[0], 'new filled value');
+      eq(objWithLengthProperty[1], 'new filled value');
+    },
+    'If no length property and 0-based properties, it should return array-like object unchanged.': function () {
+      var objWithoutLengthProperpty = {
+        0: 'first',
+        1: 'second'
+      };
+      var filledObj = fill(objWithoutLengthProperpty, 'new filled value');
+      eq(filledObj[0], 'first');
+      eq(filledObj[1], 'second');
+    },
+    'If non-writable length property, it should throw TypeError.': function () {
+      // TypeError: Cannot assign to read only property '0' of object
+      var isTypeError = false;
+      var errorMessage = '';
+
+      try {
+        fill("0123", 0);
+      } catch(e) {
+        if (e instanceof TypeError) {
+          isTypeError = true;
+          errorMessage = e.message;
+        }
+      }
+
+      eq(isTypeError, true);
+      eq(errorMessage, 'Cannot assign to read only property length of object.');
+    },
+    'It should conver startIndex to a number (NaN -> 0, undefined ->0, "1" -> 1, [1] -> 1, new Number(1) -> 1, true -> 1, false -> 0, "string" -> 0, {value: 1} -> 0).': function() {
+      // NaN -> 0
+      var startIndexNaN = 'a' / 2;
+      var filledArray = fill([1], 0, startIndexNaN);
+      eq(filledArray[0], 0);
+
+      // undefined -> 0
+      var startIndexUndefined;
+      filledArray = fill([1], 0, startIndexUndefined);
+      eq(filledArray[0], 0);
+
+      // '1' -> 1
+      var startIndexStringAsNumber = '1';
+      filledArray = fill([1, 2], 0, startIndexStringAsNumber);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 0);
+
+      // [1] -> 1
+      var startIndexAsArray = [1];
+      filledArray = fill([1, 2], 0, startIndexAsArray);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 0);
+
+      // new Number(1) -> 1
+      var startNumberAsNumberObject = new Number(1);
+      filledArray = fill([1, 2], 0, startNumberAsNumberObject);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 0);
+
+      // true -> 1
+      var startIndexBooleanTrue = true;
+      filledArray = fill([1, 2], 0, startIndexBooleanTrue);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 0);
+
+      // false -> 0
+      var startIndexBooleanFalse = false;
+      filledArray = fill([1, 2], 0, startIndexBooleanFalse);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 0);
+
+      // "string value" -> 0
+      var startNumberString = 'begin';
+      filledArray = fill([1, 2], 0, startNumberString);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 0);
+
+      // {} -> 0
+      var startIndexObj = {};
+      filledArray = fill([1, 2], 0, startIndexObj);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 0);
+    },
+    'It should conver endIndex to a number (NaN -> 0, undefined -> array.length, "1" -> 1, [1] -> 1, new Number(1) -> 1, true -> 1, false -> 0, "string" -> 0, {value: 1} -> 0).': function() {
+      // NaN -> 0
+      var endIndexNaN = 'a' / 2;
+      var filledArray = fill([1], 0, 0, endIndexNaN);
+      eq(filledArray[0], 1);
+
+      // undefined -> array.length
+      var EndIndexUndefined;
+      filledArray = fill([1], 0, 0, EndIndexUndefined);
+      eq(filledArray[0], 1);
+
+      // '1' -> 1
+      var endIndexStringAsNumber = '1';
+      filledArray = fill([1, 2], 0, 0, endIndexStringAsNumber);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 2);
+
+      // [1] -> 1
+      var endIndexAsArray = [1];
+      filledArray = fill([1, 2], 0, 0, endIndexAsArray);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 2);
+
+      // new Number(1) -> 1
+      var startNumberAsNumberObject = new Number(1);
+      filledArray = fill([1, 2], 0, 0, startNumberAsNumberObject);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 2);
+
+      // true -> 1
+      var endIndexBooleanTrue = true;
+      filledArray = fill([1, 2], 0, 0, endIndexBooleanTrue);
+      eq(filledArray[0], 0);
+      eq(filledArray[1], 2);
+
+      // false -> 0
+      var endIndexBooleanFalse = false;
+      filledArray = fill([1, 2], 0, 0, endIndexBooleanFalse);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 2);
+
+      // "string value" -> 0
+      var endNumberString = 'end';
+      filledArray = fill([1, 2], 0, 0, endNumberString);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 2);
+
+      // {} -> 0
+      var endIndexObj = {};
+      filledArray = fill([1, 2], 0, 0, endIndexObj);
+      eq(filledArray[0], 1);
+      eq(filledArray[1], 2);
+    }
+  });
+</script>
